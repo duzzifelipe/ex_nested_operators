@@ -44,29 +44,19 @@ defmodule Nested.Definition do
 
   defp decode_ast({signal, _context, [left_arg, right_arg]})
        when is_tuple(left_arg) and signal in @signals do
-    real_left_arg = decode_ast_left_arg(left_arg)
+    {_signal, _context, [_left_arg, real_left_arg]} = left_arg
     decode_ast(left_arg) ++ [{signal, real_left_arg, right_arg}]
   end
 
   defp decode_ast({signal, _context, [left_arg, right_arg]})
        when is_tuple(right_arg) and signal in @signals do
-    real_right_arg = decode_ast_right_arg(right_arg)
+    {_signal, _context, [real_right_arg, _left_arg]} = right_arg
     [{signal, left_arg, real_right_arg}] ++ decode_ast(right_arg)
   end
 
   defp decode_ast({signal, _context, [left_arg, right_arg]}) when signal in @signals do
     [{signal, left_arg, right_arg}]
   end
-
-  defp decode_ast(_arg) do
-    []
-  end
-
-  defp decode_ast_left_arg({atom, _context, nil}) when is_atom(atom), do: atom
-  defp decode_ast_left_arg({_signal, _context, [_left_arg, real_left_arg]}), do: real_left_arg
-
-  defp decode_ast_right_arg({atom, _context, nil}) when is_atom(atom), do: atom
-  defp decode_ast_right_arg({_signal, _context, [real_right_arg, _left_arg]}), do: real_right_arg
 
   defp rewrite_operator(:!=), do: :"/="
   defp rewrite_operator(op), do: op
